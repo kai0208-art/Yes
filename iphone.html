@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- 👇 新增的 iPhone 專屬全螢幕/Web App 標籤 👇 -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="電子柵欄">
+    <!-- 👆 新增完畢 👆 -->
+
+    <title>PTI 動態全螢幕顯示</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: black;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            cursor: pointer;
+            /* 防止 iPhone 長按文字選取或彈出選單 */
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100dvh; 
+            background: url('bg.png') no-repeat center center;
+            background-size: 100% 100%; 
+        }
+
+        .mask {
+            position: absolute;
+            top: 17%;
+            left: 0;
+            width: 100%;
+            height: 35%;
+            background-color: black;
+            z-index: 1;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 19%;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            pointer-events: none; 
+        }
+
+        #name {
+            color: white;
+            font-size: 8.5vw;
+            letter-spacing: 2px;
+            margin-bottom: 4.5vh; 
+            font-weight: 400;
+        }
+
+        #date {
+            color: #C8C0FF; 
+            font-size: 13vw;
+            margin-bottom: 0.5vh;
+            letter-spacing: 1px;
+            font-weight: 300;
+        }
+
+        #time {
+            color: #C8C0FF;
+            font-size: 17vw;
+            letter-spacing: 1px;
+            font-weight: 300;
+        }
+
+        #hint {
+            position: absolute;
+            bottom: 12%;
+            width: 100%;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 3.5vw;
+            z-index: 3;
+            font-weight: 300;
+        }
+    </style>
+</head>
+<body onclick="toggleFullScreen()">
+
+    <div class="container">
+        <div class="mask"></div>
+        
+        <div class="overlay">
+            <div id="name">王俊凱</div>
+            <div id="date">0000/00/00</div>
+            <div id="time">00:00:00</div>
+        </div>
+
+        <div id="hint">Android 點擊進入全螢幕 / iOS 請加入主畫面</div>
+    </div>
+
+    <script>
+        // 判斷是否為 iOS 裝置，如果是，隱藏點擊全螢幕的提示
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        if(isIOS) {
+            // 如果是在 Safari 開啟，提示加入主畫面；如果是從主畫面開啟 (standalone)，則隱藏提示
+            if (window.navigator.standalone) {
+                document.getElementById('hint').style.display = 'none';
+            } else {
+                document.getElementById('hint').textContent = "請點擊下方「分享」圖示 ➔「加入主畫面」";
+            }
+        }
+
+        function updateClock() {
+            const now = new Date();
+            
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            document.getElementById('date').textContent = `${y}/${m}/${d}`;
+
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            document.getElementById('time').textContent = `${hh}:${mm}:${ss}`;
+        }
+
+        function toggleFullScreen() {
+            if (isIOS) return; // iOS 忽略點擊全螢幕請求
+
+            if (!document.fullscreenElement) {
+                const docElm = document.documentElement;
+                if (docElm.requestFullscreen) docElm.requestFullscreen();
+                else if (docElm.webkitRequestFullscreen) docElm.webkitRequestFullscreen();
+                else if (docElm.msRequestFullscreen) docElm.msRequestFullscreen();
+                
+                document.getElementById('hint').style.display = 'none';
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                document.getElementById('hint').style.display = 'block';
+            }
+        }
+
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body>
+</html>
